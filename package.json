@@ -1,11 +1,9 @@
 {
   "name": "@open-age/logger",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a facade over watson logger with the context logging",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc --declaration",
     "test": "test"
   },
   "repository": {
@@ -27,8 +25,9 @@
   },
   "homepage": "https://github.com/openage/logger#readme",
   "devDependencies": {
-    "@types/config": "0.0.33",
-    "@types/winston": "^2.3.6",
-    "typescript": "^2.5.2"
+    "chai": "^3.5.0",
+    "chai-http": "^2.0.1",
+    "eslint": "^4.9.0",
+    "mocha": "^2.4.5"
   }
 }
