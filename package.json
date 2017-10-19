@@ -1,18 +1,20 @@
 {
-  "name": "context-logger",
-  "version": "1.0.0",
+  "name": "@open-age/logger",
+  "version": "1.0.1",
   "description": "a facade over watson logger with the context logging",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "build": "tsc --declaration",
     "test": "test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openage/context-logger.git"
+    "url": "git+https://github.com/openage/logger.git"
   },
   "keywords": [
-    "logger"
+    "logger",
+    "context"
   ],
   "dependencies": {
     "config": "^1.21.0",
@@ -21,9 +23,9 @@
   "author": "Sunny Parkash <sunny.parkash@gmail.com> (https://github.com/sunnyparkash)",
   "license": "WTFPL",
   "bugs": {
-    "url": "https://github.com/openage/context-logger/issues"
+    "url": "https://github.com/openage/logger/issues"
   },
-  "homepage": "https://github.com/openage/context-logger#readme",
+  "homepage": "https://github.com/openage/logger#readme",
   "devDependencies": {
     "@types/config": "0.0.33",
     "@types/winston": "^2.3.6",
