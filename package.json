@@ -1,33 +1,33 @@
 {
-  "name": "@open-age/logger",
-  "version": "1.0.2",
-  "description": "a facade over watson logger with the context logging",
-  "main": "index.js",
-  "scripts": {
-    "test": "test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/openage/logger.git"
-  },
-  "keywords": [
-    "logger",
-    "context"
-  ],
-  "dependencies": {
-    "config": "^1.21.0",
-    "winston": "^2.2.0"
-  },
-  "author": "Sunny Parkash <sunny.parkash@gmail.com> (https://github.com/sunnyparkash)",
-  "license": "WTFPL",
-  "bugs": {
-    "url": "https://github.com/openage/logger/issues"
-  },
-  "homepage": "https://github.com/openage/logger#readme",
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "chai-http": "^2.0.1",
-    "eslint": "^4.9.0",
-    "mocha": "^2.4.5"
-  }
+    "name": "@open-age/logger",
+    "version": "1.1.0",
+    "description": "a facade over watson logger with the context logging",
+    "main": "index.js",
+    "scripts": {
+        "test": "test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/openage/logger.git"
+    },
+    "keywords": [
+        "logger",
+        "context"
+    ],
+    "dependencies": {
+        "config": "^1.21.0",
+        "winston": "^2.2.0"
+    },
+    "author": "Sunny Parkash <sunny.parkash@gmail.com> (https://github.com/sunnyparkash)",
+    "license": "WTFPL",
+    "bugs": {
+        "url": "https://github.com/openage/logger/issues"
+    },
+    "homepage": "https://github.com/openage/logger#readme",
+    "devDependencies": {
+        "chai": "^3.5.0",
+        "chai-http": "^2.0.1",
+        "eslint": "^4.9.0",
+        "mocha": "^2.4.5"
+    }
 }
