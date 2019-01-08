@@ -1,6 +1,6 @@
 {
     "name": "@open-age/logger",
-    "version": "1.2.0",
+    "version": "1.2.3",
     "description": "a facade over watson logger with the context logging",
     "main": "index.js",
     "scripts": {
@@ -17,7 +17,7 @@
     ],
     "dependencies": {
         "config": "^3.0.1",
-        "winston": "^3.1.0"
+        "winston": "^2.4.4"
     },
     "author": "Sunny Parkash <sunny.parkash@gmail.com> (https://github.com/sunnyparkash)",
     "license": "WTFPL",

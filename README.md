@@ -109,13 +109,12 @@ gets logger section from the config file
 }
 ```
 
-handler file 
+handler file
 
 ```JavaScript
 
-module.exports = (level, message, meta, callback) => {
-    console.log(`${level}: ${message}`, meta)
-    callback(null, true)
+module.exports = async(level, message, meta, context) => {
+    console.log(`${level}: ${context.location} ${message}`, meta)
 }
 ```
 

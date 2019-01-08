@@ -21,9 +21,20 @@ if (logConfig.http) {
 
 if (logConfig.custom) {
     var CustomLogger = function (options) {
+        const handler = require(`../../../${options.handler}`)
         this.name = 'custom'
         this.level = options.level || 'info'
-        this.log = require(`../../../${options.handler}`)
+        this.log = (level, message, meta, callback) => {
+            var context = {}
+            if (meta && meta.context) {
+                context = meta.context
+                meta.context = undefined
+            }
+
+            handler(level, message, meta, context).then(() => {
+                callback(null, true)
+            })
+        }
     }
     transports.push(new CustomLogger(logConfig.custom))
 }
