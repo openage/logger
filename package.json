@@ -1,6 +1,6 @@
 {
     "name": "@open-age/logger",
-    "version": "1.2.3",
+    "version": "1.3.3",
     "description": "a facade over watson logger with the context logging",
     "main": "index.js",
     "scripts": {

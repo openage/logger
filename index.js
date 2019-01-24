@@ -115,7 +115,7 @@ module.exports = function (loggerName) {
             }
         }
 
-        return {
+        let instance = {
             context: context,
             parent: parentLogger,
             fatal: function () {
@@ -152,11 +152,17 @@ module.exports = function (loggerName) {
                     arguments[0] = arguments[0] || `took: ${span} second(s)`
                     arguments[1] = arguments[1] || {}
                     arguments[1].took = span
-                    let params = insertCtx(arguments, context)
-                    winstonLogger.debug(params[0], params[1])
+                }
+                let params = insertCtx(arguments, context)
+                winstonLogger.silly(params[0], params[1])
+
+                if (instance.parent && instance.parent.context) {
+                    instance.context = instance.parent.context
                 }
             }
         }
+
+        return instance
     }
 
     var start = function (param, parent) {
@@ -166,7 +172,7 @@ module.exports = function (loggerName) {
             return start(param, newLogger)
         }
 
-        newLogger.debug('started')
+        newLogger.silly('started')
 
         return newLogger
     }
