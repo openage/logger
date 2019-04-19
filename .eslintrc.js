@@ -1,7 +1,7 @@
 module.exports = {
     "extends": "standard",
     rules: {
-        "indent": 4,
+        "indent": 1,
         "new-cap": [0]
     }
 };
