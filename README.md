@@ -11,11 +11,11 @@ npm install @open-age/logger --save
 ## usage
 
 ```javascript
-var logger = require("@open-age/logger")('processor');
+var logger = require("@open-age/logger")('processor')
 // adds [processor] context to the message that gets logged
 
 let process = function() {
-    var logWithLocation = logger.start('process'); 
+    var logWithLocation = logger.start('process')
     // output [processor:process] started - if logStart is enabled
     log.info('complete');
     // output [processor:process] complete
@@ -66,13 +66,16 @@ uses `config` package
 gets logger section from the config file
 
 ```JSON
-"logger": {
-    "logStart": false, // logs starts of the
-    "file": {},
-    "console": {},
-    "http": {},
-    "custom: {}
-},
+{
+    "logger": {
+        "logStart": false, // logs starts of the
+        "file": {},
+        "console": {},
+        "http": {},
+        "@open-age/logger-insight": { // logs messages to insight api
+            "level": "silly"
+        }
+}
 ```
 
 ### file
@@ -90,6 +93,7 @@ gets logger section from the config file
 ```
 
 ### console
+
 ```JSON
 "console": {
     "level": "debug",
@@ -98,23 +102,50 @@ gets logger section from the config file
     "colorize": true
 }
 ```
+
 ### http
+
 ```JSON
 ```
+
 ### custom
+
+Push the logs to insight api
+
+Add relevant dependencies in `package.json`
+
+```json
+{
+    "dependencies": {
+        "@open-age/logger-insight": "^1.0.0"
+    }
+}
+```
+
+Declare it logger part of `config.json`
+
 ```JSON
-"custom": {
-    "level": "silly",
-    "handler": "helpers/db-logger"
+{
+    "@open-age/logger-insight": {
+        "level": "silly"
+    }
 }
 ```
 
-handler file
+Add relevant configs;for insight logger it uses `@open-age/insight-client` which in turn uses `providers.insight.url` to discover the api
 
-```JavaScript
-
-module.exports = async(level, message, meta, context) => {
-    console.log(`${level}: ${context.location} ${message}`, meta)
+```json
+{
+    "providers" : {
+        "insight": {
+            "url": "https://dev.openage.in/insight/api"
+        }
+    }
 }
 ```
 
+Available custom loggers
+
+- @open-age/logger-insight
+- @open-age/logger-gcp
+- @open-age/logger-aws

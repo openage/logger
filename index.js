@@ -7,181 +7,176 @@ winston.level = logConfig.level || 'info'
 
 var transports = []
 
-if (logConfig.file) {
-    transports.push(new winston.transports.File(logConfig.file))
-}
+for (const type of Object.getOwnPropertyNames(logConfig)) {
+  if (typeof logConfig[type] === 'function' || type === 'util') {
+    continue
+  }
+  switch (type.toLowerCase()) {
+    case 'file':
+      transports.push(new winston.transports.File(logConfig.file))
+      break
 
-if (logConfig.console) {
-    transports.push(new winston.transports.Console(logConfig.console))
-}
+    case 'console':
+      transports.push(new winston.transports.Console(logConfig.console))
+      break
 
-if (logConfig.http) {
-    transports.push(new winston.transports.Http(logConfig.http))
-}
+    case 'http':
+      transports.push(new winston.transports.Http(logConfig.http))
+      break
 
-if (logConfig.custom) {
-    var CustomLogger = function (options) {
+    case 'custom':
+      var CustomLogger = function (options) {
         const handler = require(`../../../${options.handler}`)
         this.name = 'custom'
         this.level = options.level || 'info'
         this.log = (level, message, meta, callback) => {
-            var context = {}
-            if (meta && meta.context) {
-                context = meta.context
-                meta.context = undefined
-            }
+          var context = {}
+          if (meta && meta.context) {
+            context = meta.context
+            meta.context = undefined
+          }
 
-            handler(level, message, meta, context).then(() => {
-                callback(null, true)
-            })
+          handler(level, message, meta, context).then(() => {
+            callback(null, true)
+          })
         }
-    }
-    transports.push(new CustomLogger(logConfig.custom))
+      }
+      transports.push(new CustomLogger(logConfig.custom))
+      break
+
+    default:
+      const provider = require(type)
+      const transport = typeof provider.transport === 'function' ? provider.transport(logConfig[type]) : provider.transport
+      transports.push(transport)
+      break
+  }
 }
 
 var defaultLogger = new winston.Logger({
-    transports: transports,
-    exitOnError: false
+  transports: transports,
+  exitOnError: false
 })
 
 defaultLogger.stream = {
-    write: function (message, encoding) {
-        defaultLogger.info(message)
-    }
+  write: function (message, encoding) {
+    defaultLogger.info(message)
+  }
 }
 
 module.exports = function (loggerName) {
-    var winstonLogger = new winston.Logger({
-        transports: transports,
-        exitOnError: false
-    })
+  var winstonLogger = new winston.Logger({
+    transports: transports,
+    exitOnError: false
+  })
 
-    var stringifiedCtx = function (context) {
-        if (loggerName) {
-            return context ? `[${loggerName}:${context.location}]` : `[${loggerName}]`
+  const getMeta = (params, context) => {
+    let meta = {}
+    if (params[1]) {
+      if (typeof params[1] === 'string') {
+        meta.message = params[1]
+      } else if (typeof params[1] === 'object') {
+        for (const field of Object.getOwnPropertyNames(params[1])) {
+          let obj = params[1][field]
+          if (typeof obj !== 'function' && field !== 'util') {
+            meta[field] = obj
+          }
         }
-        if (context) {
-            return `[${context.location}]`
-        }
-
-        return ''
+      }
     }
 
-    var insertCtx = function (params, context) {
-        if (!logConfig.custom) {
-            if (typeof params[0] === 'string') {
-                params[0] = `${stringifiedCtx(context)} ${params[0]}`
-            } else if (typeof params[0] === 'object') {
-                Array.prototype.unshift.call(params, stringifiedCtx(context))
-            }
-        } else {
-            if (params[1]) {
-                if (typeof params[1] === 'string') {
-                    params[1] = {
-                        message: params[1],
-                        context: context
-                    }
-                } else if (typeof params[1] === 'object') {
-                    params[1].context = context
-                }
-            } else {
-                params[1] = {
-                    context: context
-                }
-            }
+    meta.context = context
+    return meta
+  }
+
+  var loggerFactory = function (newContext, parentLogger) {
+    let context = {}
+
+    if (parentLogger && parentLogger.context) {
+      for (const key of Object.keys(parentLogger.context)) {
+        context[key] = parentLogger.context[key]
+      }
+    }
+    if (newContext) {
+      if (typeof newContext === 'string') {
+        context.location = context.location ? `${context.location}:${newContext}` : newContext
+      } else {
+        for (const key of Object.keys(newContext)) {
+          if (key === 'location') {
+            context.location = context.location ? `${context.location}:${newContext.location}` : newContext.location
+          } else {
+            context[key] = newContext[key]
+          }
         }
-        return params
+      }
     }
 
-    var loggerFactory = function (newContext, parentLogger) {
-        let context = {}
-
-        if (parentLogger && parentLogger.context) {
-            for (const key of Object.keys(parentLogger.context)) {
-                context[key] = parentLogger.context[key]
-            }
+    let instance = {
+      context: context,
+      parent: parentLogger,
+      fatal: function () {
+        let meta = getMeta(arguments, context)
+        winstonLogger.error(arguments[0], meta)
+      },
+      error: function () {
+        let meta = getMeta(arguments, context)
+        winstonLogger.error(arguments[0], meta)
+      },
+      warn: function () {
+        let meta = getMeta(arguments, context)
+        winstonLogger.warn(arguments[0], meta)
+      },
+      info: function () {
+        let meta = getMeta(arguments, context)
+        winstonLogger.info(arguments[0], meta)
+      },
+      verbose: function () {
+        let meta = getMeta(arguments, context)
+        winstonLogger.verbose(arguments[0], meta)
+      },
+      debug: function () {
+        let meta = getMeta(arguments, context)
+        winstonLogger.debug(arguments[0], meta)
+      },
+      silly: function () {
+        let meta = getMeta(arguments, context)
+        winstonLogger.silly(arguments[0], meta)
+      },
+      end: function () {
+        if (this.startTime) {
+          let span = (new Date() - this.startTime) / 1000
+          arguments[0] = arguments[0] || `took: ${span} second(s)`
+          arguments[1] = arguments[1] || {}
+          arguments[1].took = span
         }
-        if (newContext) {
-            if (typeof newContext === 'string') {
-                context.location = context.location ? `${context.location}:${newContext}` : newContext
-            } else {
-                for (const key of Object.keys(newContext)) {
-                    if (key === 'location') {
-                        context.location = context.location ? `${context.location}:${newContext.location}` : newContext.location
-                    } else {
-                        context[key] = newContext[key]
-                    }
-                }
-            }
+        let meta = getMeta(arguments, context)
+        winstonLogger.silly(arguments[0], meta)
+
+        if (instance.parent && instance.parent.context) {
+          instance.context = instance.parent.context
         }
-
-        let instance = {
-            context: context,
-            parent: parentLogger,
-            fatal: function () {
-                let params = insertCtx(arguments, context)
-                winstonLogger.error(params[0], params[1])
-            },
-            error: function () {
-                let params = insertCtx(arguments, context)
-                winstonLogger.error(params[0], params[1])
-            },
-            warn: function () {
-                let params = insertCtx(arguments, context)
-                winstonLogger.warn(params[0], params[1])
-            },
-            info: function () {
-                let params = insertCtx(arguments, context)
-                winstonLogger.info(params[0], params[1])
-            },
-            verbose: function () {
-                let params = insertCtx(arguments, context)
-                winstonLogger.verbose(params[0], params[1])
-            },
-            debug: function () {
-                let params = insertCtx(arguments, context)
-                winstonLogger.debug(params[0], params[1])
-            },
-            silly: function () {
-                let params = insertCtx(arguments, context)
-                winstonLogger.silly(params[0], params[1])
-            },
-            end: function () {
-                if (this.startTime) {
-                    let span = (new Date() - this.startTime) / 1000
-                    arguments[0] = arguments[0] || `took: ${span} second(s)`
-                    arguments[1] = arguments[1] || {}
-                    arguments[1].took = span
-                }
-                let params = insertCtx(arguments, context)
-                winstonLogger.silly(params[0], params[1])
-
-                if (instance.parent && instance.parent.context) {
-                    instance.context = instance.parent.context
-                }
-            }
-        }
-
-        return instance
+      }
     }
 
-    var start = function (param, parent) {
-        var newLogger = loggerFactory(param, parent)
-        newLogger.startTime = new Date()
-        newLogger.start = function (param) {
-            return start(param, newLogger)
-        }
+    return instance
+  }
 
-        newLogger.silly('started')
-
-        return newLogger
+  var start = function (param, parent) {
+    var newLogger = loggerFactory(param, parent)
+    newLogger.startTime = new Date()
+    newLogger.start = function (param) {
+      return start(param, newLogger)
     }
 
-    var logger = loggerFactory()
+    newLogger.silly('started')
 
-    logger.start = function (param) {
-        return start(param, logger)
-    }
+    return newLogger
+  }
 
-    return logger
+  var logger = loggerFactory()
+
+  logger.start = function (param) {
+    return start(param, logger)
+  }
+
+  return logger
 }
